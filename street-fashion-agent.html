@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	<title>Street Fashion AI — Chief Strategy Architect</title>
+	<style>
+		:root {
+			--bg: #0e1320;
+			--bg2: #151b29;
+			--bg3: #101520;
+			--bg4: #182031;
+			--pink: #FE53BB;
+			--cyan: #00F6FF;
+			--green: #6aab23;
+			--purple: #8500f7;
+			--text: #e8eaf0;
+			--muted: #888fa8;
+			--border: #1e2840;
+		}
+
+		* { box-sizing: border-box; margin: 0; padding: 0; }
+
+		html, body {
+			min-height: 100vh;
+			font-family: Helvetica, Arial, sans-serif;
+			background: linear-gradient(to top, #363644 0%, #151b29 100%);
+			color: var(--text);
+		}
+
+		#header {
+			background: var(--bg3);
+			color: #6f6f6f;
+			font-size: 20px;
+			line-height: 20px;
+			padding: 5px 10px;
+			letter-spacing: 3px;
+			font-weight: bold;
+		}
+
+		.container {
+			max-width: 1200px;
+			margin: 0 auto;
+			padding: 2em 1.5em 4em;
+		}
+
+		.section-label {
+			font-size: 2em;
+			font-weight: bold;
+			margin-bottom: 0.4em;
+			display: flex;
+			align-items: center;
+			gap: 0.3em;
+		}
+		.section-label.pink  { color: var(--pink);   text-shadow: 0 0 30px var(--pink); }
+		.section-label.cyan  { color: var(--cyan);   text-shadow: 0 0 30px var(--cyan); }
+		.section-label.green { color: var(--green);  text-shadow: 0 0 20px var(--green); }
+
+		.input-combo {
+			display: flex;
+			flex-direction: row;
+			width: 100%;
+			max-width: 700px;
+			margin-bottom: 0.6em;
+		}
+
+		.input-field {
+			flex: 1;
+			font-size: 1em;
+			padding: 0.75em 1em;
+			font-weight: bold;
+			background: white;
+			border: 4px solid white;
+			box-shadow: 0 30px 40px -32px var(--green), 0 2px 0 var(--green);
+			border-radius: 10px 0 0 10px;
+			transition: all 0.2s linear;
+			border-right: none;
+		}
+		.input-field:focus { outline: none; }
+
+		textarea.input-field {
+			resize: vertical;
+			min-height: 110px;
+			font-family: Helvetica, Arial, sans-serif;
+			line-height: 1.5;
+		}
+
+		.action-btn {
+			font-size: 14px;
+			font-weight: bold;
+			border: none;
+			display: flex;
+			border-radius: 0 10px 10px 0;
+			color: white;
+			cursor: pointer;
+			align-items: center;
+			padding: 0 1.2em;
+			white-space: nowrap;
+			transition: opacity 0.2s;
+		}
+		.action-btn:hover:not(:disabled) { opacity: 0.82; }
+		.action-btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+		.btn-green {
+			background: var(--green);
+			box-shadow: 0 12px 15px -10px #5ca70b, 0 2px 0 var(--green);
+		}
+		.btn-gray {
+			background: #555;
+			box-shadow: 0 12px 15px -10px #444, 0 2px 0 #555;
+		}
+
+		#key-status {
+			font-size: 0.72em;
+			color: var(--muted);
+			margin-bottom: 1.8em;
+			min-height: 1em;
+		}
+		#key-status.ok  { color: var(--green); }
+		#key-status.err { color: var(--pink); }
+
+		.hint {
+			color: var(--muted);
+			font-size: 0.78em;
+			line-height: 1.5;
+			margin-bottom: 0.8em;
+		}
+
+		#status {
+			font-size: 0.75em;
+			color: var(--muted);
+			margin-top: 0.8em;
+			margin-bottom: 0.4em;
+			font-style: italic;
+			min-height: 1.4em;
+			transition: color 0.3s;
+		}
+		#status.streaming { color: var(--cyan); }
+		#status.done      { color: var(--green); }
+		#status.error     { color: var(--pink); }
+
+		/* Phase grid */
+		.phases-grid {
+			display: grid;
+			grid-template-columns: repeat(4, 1fr);
+			gap: 1em;
+			margin-top: 1.5em;
+		}
+		@media (max-width: 960px) { .phases-grid { grid-template-columns: repeat(2, 1fr); } }
+		@media (max-width: 520px) { .phases-grid { grid-template-columns: 1fr; } }
+
+		.phase-card {
+			background: var(--bg3);
+			border-radius: 10px;
+			border: 1px solid var(--border);
+			padding: 1.1em 1.1em 1.3em;
+			display: flex;
+			flex-direction: column;
+			min-height: 280px;
+			transition: box-shadow 0.4s;
+		}
+		.phase-card[data-phase="1"] { border-top: 3px solid var(--pink); }
+		.phase-card[data-phase="2"] { border-top: 3px solid var(--green); }
+		.phase-card[data-phase="3"] { border-top: 3px solid var(--cyan); }
+		.phase-card[data-phase="4"] { border-top: 3px solid var(--purple); }
+
+		.phase-card[data-phase="1"].active { box-shadow: 0 0 22px 2px #FE53BB33; }
+		.phase-card[data-phase="2"].active { box-shadow: 0 0 22px 2px #6aab2333; }
+		.phase-card[data-phase="3"].active { box-shadow: 0 0 22px 2px #00F6FF33; }
+		.phase-card[data-phase="4"].active { box-shadow: 0 0 22px 2px #8500f733; }
+
+		.phase-num {
+			font-size: 0.62em;
+			font-weight: bold;
+			letter-spacing: 2px;
+			text-transform: uppercase;
+			margin-bottom: 0.35em;
+		}
+		.phase-card[data-phase="1"] .phase-num { color: var(--pink);   text-shadow: 0 0 12px var(--pink); }
+		.phase-card[data-phase="2"] .phase-num { color: var(--green);  text-shadow: 0 0 12px var(--green); }
+		.phase-card[data-phase="3"] .phase-num { color: var(--cyan);   text-shadow: 0 0 12px var(--cyan); }
+		.phase-card[data-phase="4"] .phase-num { color: var(--purple); text-shadow: 0 0 12px var(--purple); }
+
+		.phase-title {
+			font-size: 0.82em;
+			font-weight: bold;
+			color: var(--text);
+			margin-bottom: 0.6em;
+			padding-bottom: 0.5em;
+			border-bottom: 1px solid var(--border);
+		}
+
+		.phase-body {
+			font-size: 0.77em;
+			line-height: 1.7;
+			color: #bec5d6;
+			flex: 1;
+			white-space: pre-wrap;
+			word-break: break-word;
+		}
+
+		.phase-placeholder {
+			color: #2e3a52;
+			font-style: italic;
+		}
+
+		.cursor {
+			display: inline-block;
+			width: 7px;
+			height: 0.85em;
+			background: currentColor;
+			opacity: 0.7;
+			animation: blink 0.75s step-end infinite;
+			vertical-align: text-bottom;
+			margin-left: 1px;
+		}
+		@keyframes blink { 50% { opacity: 0; } }
+	</style>
+</head>
+<body>
+
+<div id="header">Street Fashion AI — Chief Strategy Architect</div>
+
+<div class="container">
+
+	<!-- API Key -->
+	<div class="section-label pink">⚡ API Key</div>
+	<div class="input-combo">
+		<input type="password" id="api-key" class="input-field" placeholder="sk-ant-…  (Anthropic API key)" />
+		<button class="action-btn btn-gray" onclick="saveKey()">SAVE</button>
+	</div>
+	<div id="key-status"></div>
+
+	<!-- Concept Input -->
+	<div class="section-label cyan">◈ Concept</div>
+	<p class="hint">Describe a fashion concept, drop idea, or brand vision. The agent reverse-engineers it into a 4-phase execution plan. Press Ctrl+Enter to submit.</p>
+	<div class="input-combo" style="max-width:100%;">
+		<textarea id="concept" class="input-field" placeholder="e.g. A heavyweight varsity jacket inspired by Chicano lowrider culture, sold as a 50-piece limited drop targeting West Coast collectors..."></textarea>
+		<button class="action-btn btn-green" id="analyze-btn" onclick="analyze()" style="align-self:stretch;">ANALYZE</button>
+	</div>
+
+	<div id="status"></div>
+
+	<!-- 4-Phase Output -->
+	<div class="phases-grid">
+		<div class="phase-card" data-phase="1" id="card-1">
+			<div class="phase-num">Phase 1</div>
+			<div class="phase-title">Social / Mental Hook</div>
+			<div class="phase-body" id="body-1"><span class="phase-placeholder">Cultural psychology, subculture identity, emotional trigger…</span></div>
+		</div>
+		<div class="phase-card" data-phase="2" id="card-2">
+			<div class="phase-num">Phase 2</div>
+			<div class="phase-title">Economic Viability</div>
+			<div class="phase-body" id="body-2"><span class="phase-placeholder">Pricing model, scarcity mechanics, margin analysis, resale potential…</span></div>
+		</div>
+		<div class="phase-card" data-phase="3" id="card-3">
+			<div class="phase-num">Phase 3</div>
+			<div class="phase-title">Design Technicalities</div>
+			<div class="phase-body" id="body-3"><span class="phase-placeholder">Silhouette, GSM, construction, colorways, hardware, finishing…</span></div>
+		</div>
+		<div class="phase-card" data-phase="4" id="card-4">
+			<div class="phase-num">Phase 4</div>
+			<div class="phase-title">Digital Implementation</div>
+			<div class="phase-body" id="body-4"><span class="phase-placeholder">Funnel automation, CRM cadence, conversion touchpoints, AI sub-agents…</span></div>
+		</div>
+	</div>
+
+</div>
+
+<script>
+const SYSTEM_PROMPT = `You are the Chief Strategy Architect for a street fashion brand. You operate at the intersection of street culture and business precision — authentic, analytical, and forward-thinking.
+
+Your knowledge spans four pillars:
+1. Cultural Anthropology — tracking how social movements, music, and subcultures (Chicano, JDM, skateboarding, hip-hop, drill) shape cultural capital before it hits the mainstream.
+2. Micro/Macro Economics — scarcity models (drop culture), resale dynamics, dynamic pricing, and how inflation shifts spending between luxury and street.
+3. Behavioral Psychology — dopamine loops of online shopping, brand loyalty as community-building, and the "Why" behind the "Buy."
+4. Technical Stack — headless commerce, AI-driven inventory APIs, and automated conversion funnels.
+
+You also monitor geopolitical context: tariff impacts on blank garment costs, supply chain shifts, and the slow-fashion ethics movement in urban communities.
+
+When given a fashion concept, reverse-engineer it into this exact structure. Use plain text only — no markdown bold, no bullet symbols, no asterisks:
+
+## PHASE 1: SOCIAL/MENTAL HOOK
+[The psychological trigger and cultural story. What subculture does this speak to? What emotion or identity does it unlock?]
+
+## PHASE 2: ECONOMIC VIABILITY
+[Limited Release vs High-Frequency model. Pricing strategy, scarcity mechanics, resale potential, and margin analysis.]
+
+## PHASE 3: DESIGN TECHNICALITIES
+[Garment specs: silhouette, fabric weight (GSM), construction details, colorways, hardware, finishing. Be specific.]
+
+## PHASE 4: DIGITAL IMPLEMENTATION
+[Sales funnel automation, CRM cadence, conversion optimization touchpoints, AI sub-agent opportunities for support/engagement, tracking metrics.]
+
+Be direct, specific, and street-smart. No filler.`;
+
+const PHASE_PATTERNS = [
+	{ phase: 1, re: /##\s*PHASE\s*1\s*:/i },
+	{ phase: 2, re: /##\s*PHASE\s*2\s*:/i },
+	{ phase: 3, re: /##\s*PHASE\s*3\s*:/i },
+	{ phase: 4, re: /##\s*PHASE\s*4\s*:/i },
+];
+
+window.addEventListener('DOMContentLoaded', () => {
+	const saved = localStorage.getItem('sf_anthropic_key');
+	if (saved) {
+		document.getElementById('api-key').value = saved;
+		setKeyStatus('Key loaded from storage.', 'ok');
+	}
+	document.getElementById('concept').addEventListener('keydown', e => {
+		if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') analyze();
+	});
+});
+
+function saveKey() {
+	const key = document.getElementById('api-key').value.trim();
+	if (!key) { setKeyStatus('Enter a key first.', 'err'); return; }
+	localStorage.setItem('sf_anthropic_key', key);
+	setKeyStatus('Key saved.', 'ok');
+}
+
+function setKeyStatus(msg, cls) {
+	const el = document.getElementById('key-status');
+	el.textContent = msg;
+	el.className = cls || '';
+}
+
+function setStatus(msg, cls) {
+	const el = document.getElementById('status');
+	el.textContent = msg;
+	el.className = cls || '';
+}
+
+const PLACEHOLDERS = [
+	'Cultural psychology, subculture identity, emotional trigger…',
+	'Pricing model, scarcity mechanics, margin analysis, resale potential…',
+	'Silhouette, GSM, construction, colorways, hardware, finishing…',
+	'Funnel automation, CRM cadence, conversion touchpoints, AI sub-agents…',
+];
+
+function resetCards() {
+	for (let i = 1; i <= 4; i++) {
+		const body = document.getElementById(`body-${i}`);
+		body.innerHTML = `<span class="phase-placeholder">${PLACEHOLDERS[i-1]}</span>`;
+		document.getElementById(`card-${i}`).classList.remove('active');
+	}
+}
+
+function setPhaseActive(phase) {
+	for (let i = 1; i <= 4; i++) {
+		const card = document.getElementById(`card-${i}`);
+		const body = document.getElementById(`body-${i}`);
+		if (i !== phase) {
+			card.classList.remove('active');
+			const cur = body.querySelector('.cursor');
+			if (cur) cur.remove();
+		}
+	}
+	document.getElementById(`card-${phase}`).classList.add('active');
+}
+
+function renderPhase(phase, text) {
+	const body = document.getElementById(`body-${phase}`);
+	body.textContent = text;
+	const cur = document.createElement('span');
+	cur.className = 'cursor';
+	body.appendChild(cur);
+}
+
+async function analyze() {
+	const apiKey = (document.getElementById('api-key').value || localStorage.getItem('sf_anthropic_key') || '').trim();
+	if (!apiKey) { setKeyStatus('No API key — enter and save one first.', 'err'); return; }
+
+	const concept = document.getElementById('concept').value.trim();
+	if (!concept) { setStatus('Enter a concept first.', 'error'); return; }
+
+	const btn = document.getElementById('analyze-btn');
+	btn.disabled = true;
+	resetCards();
+	setStatus('Connecting to Claude…', 'streaming');
+
+	let currentPhase = 0;
+	const phaseTexts = { 1: '', 2: '', 3: '', 4: '' };
+	let buffer = '';
+
+	try {
+		const resp = await fetch('https://api.anthropic.com/v1/messages', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+				'x-api-key': apiKey,
+				'anthropic-version': '2023-06-01',
+				'anthropic-beta': 'prompt-caching-2024-07-31',
+			},
+			body: JSON.stringify({
+				model: 'claude-sonnet-4-6',
+				max_tokens: 4096,
+				stream: true,
+				system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+				messages: [{ role: 'user', content: concept }],
+			}),
+		});
+
+		if (!resp.ok) {
+			const err = await resp.json().catch(() => ({ error: { message: resp.statusText } }));
+			throw new Error(err?.error?.message || resp.statusText);
+		}
+
+		setStatus('Streaming…', 'streaming');
+
+		const reader = resp.body.getReader();
+		const decoder = new TextDecoder();
+		let rawTail = '';
+
+		while (true) {
+			const { done, value } = await reader.read();
+			if (done) break;
+
+			rawTail += decoder.decode(value, { stream: true });
+			const lines = rawTail.split('\n');
+			rawTail = lines.pop();
+
+			for (const line of lines) {
+				if (!line.startsWith('data:')) continue;
+				const data = line.slice(5).trim();
+				if (data === '[DONE]') continue;
+				let parsed;
+				try { parsed = JSON.parse(data); } catch { continue; }
+				if (parsed.type !== 'content_block_delta' || parsed.delta?.type !== 'text_delta') continue;
+
+				buffer += parsed.delta.text;
+
+				// Detect phase transitions
+				let transitioned = false;
+				for (const { phase, re } of PHASE_PATTERNS) {
+					const idx = buffer.search(re);
+					if (idx === -1) continue;
+
+					// Flush text before the marker to current phase
+					const before = buffer.slice(0, idx);
+					if (before && currentPhase) {
+						phaseTexts[currentPhase] += before;
+						renderPhase(currentPhase, phaseTexts[currentPhase]);
+					}
+
+					// Strip the header line and switch phase
+					const afterMarker = buffer.slice(idx).replace(re, '').replace(/^[^\n]*\n?/, '');
+					buffer = afterMarker;
+					currentPhase = phase;
+					phaseTexts[phase] = '';
+					setPhaseActive(phase);
+					transitioned = true;
+					break;
+				}
+
+				if (!transitioned && currentPhase) {
+					// Flush buffer, keeping last 60 chars as look-ahead for partial headers
+					const safeLen = Math.max(0, buffer.length - 60);
+					if (safeLen > 0) {
+						phaseTexts[currentPhase] += buffer.slice(0, safeLen);
+						buffer = buffer.slice(safeLen);
+						renderPhase(currentPhase, phaseTexts[currentPhase]);
+					}
+				}
+			}
+		}
+
+		// Final flush
+		if (buffer && currentPhase) {
+			phaseTexts[currentPhase] += buffer;
+			renderPhase(currentPhase, phaseTexts[currentPhase]);
+		}
+
+		// Clean up
+		document.querySelectorAll('.cursor').forEach(c => c.remove());
+		document.querySelectorAll('.phase-card').forEach(c => c.classList.remove('active'));
+		setStatus('Analysis complete.', 'done');
+
+	} catch (err) {
+		document.querySelectorAll('.cursor').forEach(c => c.remove());
+		document.querySelectorAll('.phase-card').forEach(c => c.classList.remove('active'));
+		setStatus(`Error: ${err.message}`, 'error');
+	} finally {
+		btn.disabled = false;
+	}
+}
+</script>
+</body>
+</html>
